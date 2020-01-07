@@ -29,6 +29,13 @@ def distance3d(start, stop):
     return np.sqrt(np.sum((stop-start)**2))
 
 
+def cend(particle, tstop):
+    delta = (tstop-particle.t) * C
+    p = dir_to_mom(particle.zen, particle.azi)
+    x = np.asarray(particle[:3])
+    return p*delta+x
+
+
 def particle_nodes(particle, tstop, step):
     delta = (tstop-particle.t) * C
     p = dir_to_mom(particle.zen, particle.azi)
@@ -124,16 +131,14 @@ def draw_event(frame, draw_detector, draw_coord, pulse,
         #     ax.plot([_x]*2, [_y]*2, [om_z[0], om_z[-1]], c='grey')
 
     if None not in particle:
-        # get the particle stopping point
-        for _ in particle_nodes(particle, tlim[1], step):
-            pass
-        stop = _[:,-1]
+        # get the distance travelled by c from vertex to tlim[1]
+        stop = cend(particle, tlim[1])
 
         for _ in particle_nodes(particle, tlim[1], step):
             pobj = ax.plot(*_)
             if cherenkov:
                 draw_cherenkov(_, stop, ax,
-                               color=pobj[-1].get_color(), alpha=0.3)
+                               color=pobj[-1].get_color(), alpha=0.1)
         
     eve = event(i3_omgeo, all_pulses, tlim)
     ax.scatter(eve['x'], eve['y'], eve['z'], marker='.', edgecolor='none', s=np.asarray(eve['q'])/scaling,
