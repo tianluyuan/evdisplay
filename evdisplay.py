@@ -11,7 +11,7 @@ from icecube import icetray, dataio, dataclasses, phys_services
 
 
 Particle = namedtuple('Particle', 'x y z t zen azi topo')
-NIDX = 1.309
+NIDX = 1.366 # n_g at 400 nm
 C = 3e8 * I3Units.m/I3Units.s #m/s
 
 
