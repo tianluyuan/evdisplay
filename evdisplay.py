@@ -57,13 +57,13 @@ def particle_nodes(particle, tstop, step):
 
 
 def detector(i3_omgeo, all_pulses):
-    oms = defaultdict(list)
+    oms = defaultdict(lambda: defaultdict(list))
     for om, omgeo in i3_omgeo:
         # if all_pulses.has_key(om):
         #     continue
-        oms['x'].append(omgeo.position.x)
-        oms['y'].append(omgeo.position.y)
-        oms['z'].append(omgeo.position.z)
+        oms[om.string]['x'].append(omgeo.position.x)
+        oms[om.string]['y'].append(omgeo.position.y)
+        oms[om.string]['z'].append(omgeo.position.z)
     return oms
         
 
@@ -126,7 +126,10 @@ def draw_event(frame, draw_detector, draw_coord, pulse,
     ax = fig.add_subplot(111, projection='3d')
     if draw_detector:
         oms = detector(i3_omgeo, all_pulses)
-        ax.scatter(oms['x'], oms['y'], oms['z'], marker='.', edgecolor='none',s=1, c='k', depthshade=depthshade)
+        for s in oms:
+            ax.plot(oms[s]['x'], oms[s]['y'], oms[s]['z'], 'k-', linewidth=0.3)
+            ax.scatter(oms[s]['x'], oms[s]['y'], oms[s]['z'], marker='.',
+                       edgecolor='none',s=3, c='k', depthshade=depthshade)
         # for _x, _y in zip(str_x, str_y):
         #     ax.plot([_x]*2, [_y]*2, [om_z[0], om_z[-1]], c='grey')
 
