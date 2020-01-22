@@ -104,7 +104,7 @@ def draw_cherenkov(nodes, stop, ax, **kwargs):
         draw_sphere(_, r, ax, **kwargs)
 
 
-def draw_event(frame, draw_detector, draw_coord, pulse,
+def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
                xlim, ylim, zlim, tlim, particle, step,
                scaling, cmap, depthshade, cherenkov,
                view):
@@ -124,6 +124,9 @@ def draw_event(frame, draw_detector, draw_coord, pulse,
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
+    if draw_grid:
+        X, Y = np.meshgrid(np.arange(-600, 650, 50), np.arange(-600, 650, 50))
+        ax.plot_wireframe(X, Y, np.full(Y.shape,-500), color='gray', linewidth=0.1)
     if draw_detector:
         oms = detector(i3_omgeo, all_pulses)
         for s in oms:
@@ -162,6 +165,7 @@ def main():
     parser = argparse.ArgumentParser(
         description='Input i3 file and output matplotlib evdisplay')
     parser.add_argument('-i', '--infile', nargs='+')
+    parser.add_argument('-g', '--grid', default=False, action='store_true')
     parser.add_argument('-d', '--det', default=False, action='store_true')
     parser.add_argument('-c', '--coord', default=False, action='store_true')
     parser.add_argument('-N', '--nframes', type=int, default=None, help='number of frames to process')
@@ -187,6 +191,7 @@ def main():
     tray = I3Tray()
     tray.Add('I3Reader', Filenamelist=args.infile)
     tray.Add(draw_event,
+             draw_grid=args.grid,
              draw_detector=args.det,
              draw_coord=args.coord,
              pulse=args.pulse,
