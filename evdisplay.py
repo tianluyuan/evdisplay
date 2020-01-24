@@ -25,10 +25,6 @@ def range3d(x, p, step, stop):
     return np.asarray(p)[:,None]*steps[None,:]+np.asarray(x)[:,None]
 
 
-def distance3d(start, stop):
-    return np.sqrt(np.sum((stop-start)**2))
-
-
 def cend(particle, tstop):
     delta = (tstop-particle.t) * C
     p = dir_to_mom(particle.zen, particle.azi)
@@ -100,7 +96,7 @@ def draw_sphere(center, r, ax, **kwargs):
 
 def draw_cherenkov(nodes, stop, ax, **kwargs):
     for _ in nodes.T:
-        r = distance3d(stop, _)/NIDX
+        r = np.linalg.norm(stop-_)/NIDX
         draw_sphere(_, r, ax, **kwargs)
 
 
