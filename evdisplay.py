@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import argparse
 import numpy as np
@@ -168,11 +168,11 @@ def main():
     parser.add_argument('-p', '--pulse', type=str,
                         default='OfflinePulsesHLC',
                         help='specify the pulse type (default SplitInIcePulses)')
-    parser.add_argument('--xlim', nargs='+', default=(None,None), type=float, help='(xlow, xup)')
-    parser.add_argument('--ylim', nargs='+', default=(None,None), type=float, help='(ylow, yup)')
-    parser.add_argument('--zlim', nargs='+', default=(-600, 500), type=float, help='(zlow, zup)')
-    parser.add_argument('--tlim', nargs='+', default=(-np.inf, np.inf), type=float, help='(tlow, tup)')
-    parser.add_argument('--particle', nargs='+', default=(None, None, None, None, None, None, None),
+    parser.add_argument('--xlim', nargs=2, default=(None,None), type=float, help='(xlow, xup)')
+    parser.add_argument('--ylim', nargs=2, default=(None,None), type=float, help='(ylow, yup)')
+    parser.add_argument('--zlim', nargs=2, default=(-600, 500), type=float, help='(zlow, zup)')
+    parser.add_argument('--tlim', nargs=2, default=(-np.inf, np.inf), type=float, help='(tlow, tup)')
+    parser.add_argument('--particle', nargs=7, default=(None, None, None, None, None, None, None),
                         type=float, help='(x,y,z,t,zen,azi,topo) topo=0 cascade, 1 track, 2 hybrid')
     parser.add_argument('--step', default=10, type=float, help='nodes for particle, cherenkov bubbles placed here')
     parser.add_argument('-s', '--scaling', default=1,
@@ -180,7 +180,7 @@ def main():
     parser.add_argument('--cmap', default='jet_r')
     parser.add_argument('--depthshade', default=False, action='store_true')
     parser.add_argument('--cherenkov', default=False, action='store_true', help='draw cherenkov sphere')
-    parser.add_argument('--view', nargs='+', default=(None,None), type=float, help='Passed to ax.view_init for initial elev and azimuth angle')
+    parser.add_argument('--view', nargs=2, default=(None,None), type=float, help='Passed to ax.view_init for initial elev and azimuth angle')
 
     args = parser.parse_args()
 
