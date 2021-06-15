@@ -117,7 +117,7 @@ def colorlines3d(x, y, z, ax, ncolors=5, cmapname='viridis_r', **kwargs):
         
 def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
                xlim, ylim, zlim, tlim, particle, step,
-               scaling, cmap, depthshade, cherenkov,
+               scaling, sfn, cmap, depthshade, cherenkov,
                view, llhout):
     """ plots the pulses of the individual frame
     """
@@ -171,7 +171,8 @@ def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
         colorlines3d(llhsteps['x'], llhsteps['y'], llhsteps['z'], ax)
         
     eve = event(i3_omgeo, all_pulses, tlim)
-    ax.scatter(eve['x'], eve['y'], eve['z'], marker='.', edgecolor='none', s=np.asarray(eve['q'])/scaling,
+    sfn = np.log if sfn == 'log' else np.asarray
+    ax.scatter(eve['x'], eve['y'], eve['z'], marker='.', edgecolor='none', s=sfn(eve['q'])/scaling,
                c=np.log(np.asarray(eve['t'])-min(eve['t'])), cmap=cmap, depthshade=depthshade)
 
     ax.set_xlim(*xlim)
@@ -203,8 +204,10 @@ def main():
     parser.add_argument('--particle', nargs=7, default=(None, None, None, None, None, None, None),
                         type=float, help='(x,y,z,t,zen,azi,topo) topo=0 cascade, 1 track, 2 hybrid')
     parser.add_argument('--step', default=10, type=float, help='nodes for particle, cherenkov bubbles placed here')
-    parser.add_argument('-s', '--scaling', default=1,
+    parser.add_argument('-s', '--scaling', default=0.1,
                         type=float, help='factor to scale down qtot by for bubble size')
+    parser.add_argument('--sfn', default='log',
+                        help='function to apply to scale qtot by')
     parser.add_argument('--cmap', default='jet_r')
     parser.add_argument('--depthshade', default=False, action='store_true')
     parser.add_argument('--cherenkov', default=False, action='store_true', help='draw cherenkov sphere')
@@ -226,6 +229,7 @@ def main():
              tlim=args.tlim,
              particle=Particle(*args.particle),
              scaling=args.scaling,
+             sfn=args.sfn,
              cmap=args.cmap,
              depthshade=args.depthshade,
              cherenkov=args.cherenkov,
