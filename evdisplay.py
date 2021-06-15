@@ -117,7 +117,7 @@ def colorlines3d(x, y, z, ax, ncolors=5, cmapname='viridis_r', **kwargs):
         
 def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
                xlim, ylim, zlim, tlim, particle, step,
-               scaling, sfn, cmap, depthshade, cherenkov,
+               scaling, linearsfn, cmap, depthshade, cherenkov,
                view, llhout):
     """ plots the pulses of the individual frame
     """
@@ -171,7 +171,7 @@ def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
         colorlines3d(llhsteps['x'], llhsteps['y'], llhsteps['z'], ax)
         
     eve = event(i3_omgeo, all_pulses, tlim)
-    sfn = np.log if sfn == 'log' else np.asarray
+    sfn = np.asarray if linearsfn else np.log
     ax.scatter(eve['x'], eve['y'], eve['z'], marker='.', edgecolor='none', s=sfn(eve['q'])/scaling,
                c=np.log(np.asarray(eve['t'])-min(eve['t'])), cmap=cmap, depthshade=depthshade)
 
@@ -206,8 +206,8 @@ def main():
     parser.add_argument('--step', default=10, type=float, help='nodes for particle, cherenkov bubbles placed here')
     parser.add_argument('-s', '--scaling', default=0.1,
                         type=float, help='factor to scale down qtot by for bubble size')
-    parser.add_argument('--sfn', default='log',
-                        help='function to apply to scale qtot by')
+    parser.add_argument('--linearsfn', default=False, action='store_true',
+                        help='plot bubble size linearly with DOM qtot')
     parser.add_argument('--cmap', default='jet_r')
     parser.add_argument('--depthshade', default=False, action='store_true')
     parser.add_argument('--cherenkov', default=False, action='store_true', help='draw cherenkov sphere')
@@ -229,7 +229,7 @@ def main():
              tlim=args.tlim,
              particle=Particle(*args.particle),
              scaling=args.scaling,
-             sfn=args.sfn,
+             linearsfn=args.linearsfn,
              cmap=args.cmap,
              depthshade=args.depthshade,
              cherenkov=args.cherenkov,
