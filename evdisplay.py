@@ -2,6 +2,7 @@
 import os
 import argparse
 import numpy as np
+from matplotlib import colors
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
@@ -57,9 +58,7 @@ def detector(i3_omgeo, all_pulses):
     for om, omgeo in i3_omgeo:
         # if all_pulses.has_key(om):
         #     continue
-        oms[om.string]['x'].append(omgeo.position.x)
-        oms[om.string]['y'].append(omgeo.position.y)
-        oms[om.string]['z'].append(omgeo.position.z)
+        oms[omgeo.omtype][om.string].append(omgeo.position)
     return oms
         
 
@@ -100,10 +99,26 @@ def draw_cherenkov(nodes, stop, ax, **kwargs):
         draw_sphere(_, r, ax, **kwargs)
 
 
+def colorlines3d(x, y, z, ax, ncolors=5, cmapname='viridis_r', **kwargs):
+    """Plot a line plot in which the lines change colors as the data is
+    stepped through.
+
+    *ncolors* specifies the number of different colors to use
+    """
+    cmap = plt.get_cmap(cmapname)
+    norm = colors.Normalize(vmin=0, vmax=ncolors-1)
+    for i in range(ncolors):
+        chunksize = len(x)//ncolors
+        low = i*chunksize
+        # add 1 to keep lines connected
+        high = min((i+1)*chunksize+1, len(x))
+        ax.plot(x[low:high], y[low:high], z[low:high], color=cmap(norm(i)), **kwargs)
+
+        
 def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
                xlim, ylim, zlim, tlim, particle, step,
                scaling, cmap, depthshade, cherenkov,
-               view):
+               view, llhout):
     """ plots the pulses of the individual frame
     """
     if not frame.Has(pulse):
@@ -125,10 +140,16 @@ def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
         ax.plot_wireframe(X, Y, np.full(Y.shape,-500), color='gray', linewidth=0.1)
     if draw_detector:
         oms = detector(i3_omgeo, all_pulses)
-        for s in oms:
-            ax.plot(oms[s]['x'], oms[s]['y'], oms[s]['z'], 'k-', linewidth=0.3)
-            ax.scatter(oms[s]['x'], oms[s]['y'], oms[s]['z'], marker='.',
-                       edgecolor='none',s=3, c='k', depthshade=depthshade)
+        for omtype in oms:
+            for s in oms[omtype]:
+                _ = np.asarray(oms[omtype][s]).T
+                if omtype in [dataclasses.I3OMGeo.OMType.IceCube,
+                              dataclasses.I3OMGeo.OMType.PDOM,
+                              dataclasses.I3OMGeo.OMType.DEgg,
+                              dataclasses.I3OMGeo.OMType.mDOM]:
+                    ax.plot(*_, 'k-', linewidth=0.3)
+                ax.scatter(*_, marker='.',
+                           edgecolor='none',s=3, c='k', depthshade=depthshade)
         # for _x, _y in zip(str_x, str_y):
         #     ax.plot([_x]*2, [_y]*2, [om_z[0], om_z[-1]], c='grey')
 
@@ -141,6 +162,13 @@ def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
             if cherenkov:
                 draw_cherenkov(_, stop, ax,
                                color=pobj[-1].get_color(), alpha=0.1)
+    if os.path.isfile(llhout):
+        llh = pd.read_csv(
+            llhout, delim_whitespace=True, header=None,
+            names='l rlogl x y z zenith azimuth e t a b'.split(),
+            error_bad_lines=False)
+        llhsteps = llh.loc[llh['l'].str.isdigit()].apply(pd.to_numeric)
+        colorlines3d(llhsteps['x'], llhsteps['y'], llhsteps['z'], ax)
         
     eve = event(i3_omgeo, all_pulses, tlim)
     ax.scatter(eve['x'], eve['y'], eve['z'], marker='.', edgecolor='none', s=np.asarray(eve['q'])/scaling,
@@ -181,6 +209,7 @@ def main():
     parser.add_argument('--depthshade', default=False, action='store_true')
     parser.add_argument('--cherenkov', default=False, action='store_true', help='draw cherenkov sphere')
     parser.add_argument('--view', nargs=2, default=(None,None), type=float, help='Passed to ax.view_init for initial elev and azimuth angle')
+    parser.add_argument('--llhout', default=None, help='Path to DF llh 10 output file to show vertex convergence')
 
     args = parser.parse_args()
 
@@ -201,7 +230,8 @@ def main():
              depthshade=args.depthshade,
              cherenkov=args.cherenkov,
              step=args.step,
-             view=args.view)
+             view=args.view,
+             llhout=args.llhout)
 
     if args.nframes is None:
         tray.Execute()
