@@ -168,7 +168,7 @@ def draw_event(frame, draw_detector, draw_coord, draw_grid, pulse,
             names='l rlogl x y z zenith azimuth e t a b'.split(),
             error_bad_lines=False)
         llhsteps = llh.loc[llh['l'].str.isdigit()].apply(pd.to_numeric)
-        colorlines3d(llhsteps['x'], llhsteps['y'], llhsteps['z'], ax)
+        colorlines3d(llhsteps['x'], llhsteps['y'], llhsteps['z'], ax, linewidth=0.5)
         
     eve = event(i3_omgeo, all_pulses, tlim)
     sfn = np.asarray if linearsfn else np.log
